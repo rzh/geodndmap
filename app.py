@@ -23,11 +23,16 @@ def geo_map():
 
 @app.route('/geoQuery')
 def do_query():
-    query = json.loads(request.GET['query'])
     try:
-        explain = client[MONGO_DB][MONGO_COLL].find(query).explain()
-    except Exception as e:
+        query = json.loads(request.GET['query'])
+    except ValueError as e:
+        query = "Bad JSON!"
         explain = str(e)
+    else:
+        try:
+            explain = client[MONGO_DB][MONGO_COLL].find(query).explain()
+        except Exception as e:
+            explain = str(e)
     # TODO: pass 'explain' to parser
     return template('<h3>Explain Output for {{query}}'
                     '</h3><pre>{{explain}}</pre>',
