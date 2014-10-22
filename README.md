@@ -16,6 +16,10 @@ Supported GeoJSON objects are currently:
 * MultiPoint
 * GeometryCollection
 
+### Installation
+
+You can install this project with `pip install -r requirements.txt`. Then you can run the server with `python app.py`.
+
 ### Usage
 
 You need to replace the string `<insert API key here>` with your actual Google Maps API key in [`index.html`](https://github.com/rueckstiess/geodndmap/blob/master/index.html#L33). Information about how to optain a key can be found here: https://developers.google.com/maps/documentation/javascript/tutorial#api_key
