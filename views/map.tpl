@@ -5,6 +5,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <title>Drag and Drop GeoJSON</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://localhost:8080/static/bootstrap/css/bootstrap.min.css">
+    <script src="http://localhost:8080/static/jquery-2.1.1.min.js" > </script>
+    <script src="http://localhost:8080/static/bootstrap/js/bootstrap.min.js"></script>
+
     <style type="text/css">
       html { height: 100% }
       body { height: 100%; margin: 0; padding: 0; overflow: hidden; }
@@ -35,6 +40,7 @@
 
 var map;
 var bounds;
+var stage=1;
 
 function initMap() {
   // set up the map
@@ -198,12 +204,58 @@ function handleDrop(e) {
 google.maps.event.addDomListener(window, 'load', function() {
   initMap();
   initEvents();
+
+  $('#query').on('click', function(event) {
+    $.getJSON( "geoQuery", {query: '{}'}, function( data ) {
+      $( "#queryStr" ).val( JSON.stringify(data) );
+           // parse and update map
+           data.forEach(function(d) {
+            plainText = JSON.stringify(d)
+                if (plainText) {
+                    loadGeoJson(plainText);
+                    map.fitBounds(bounds);
+                }
+            });
+        });
+  })
+
+  // init even 
+  $('#decStage').on('click', function(event) {
+      if(stage > 1) {
+        stage--;
+      }
+      $('#stage').text(stage);
+  })
+
+  $('#incStage').on('click', function(event) {
+      if(stage < 10) {
+        stage++
+      }
+      $('#stage').text(stage);
+  })
 });
 
     </script>
   </head>
   <body>
+    <h4>Geo Query</h4>
+    <textarea id="queryStr" class="form-control" rows="3"></textarea>
+
+    <button id="query" type="submit" class="btn btn-default">Submit <span class="glyphicon glyphicon-map-marker"/></button>
+    
+    <div class="pull-right">
+    <button id="decStage" class="btn btn-default"> 
+        <span class="glyphicon glyphicon-chevron-left"></span> 
+    </button>
+    Stage: <span id="stage"> 1 </span>
+    <button id="incStage" class="btn btn-default"> 
+        <span class="glyphicon glyphicon-chevron-right"></span>
+    </button>
+    </div>
+
+
     <div id="map-canvas"></div>
+
     <div id="drop-container"><div id="drop-silhouette"></div></div>
   </body>
 </html>
