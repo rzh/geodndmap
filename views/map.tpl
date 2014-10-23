@@ -40,7 +40,9 @@
 
 var map;
 var bounds;
-var stage=1;
+var stage=0;
+var geodata={};
+var maxstage=0;
 
 function initMap() {
   // set up the map
@@ -206,32 +208,59 @@ google.maps.event.addDomListener(window, 'load', function() {
   initEvents();
 
   $('#query').on('click', function(event) {
-    $.getJSON( "geoQuery", {query: '{}'}, function( data ) {
-      $( "#queryStr" ).val( JSON.stringify(data) );
+    $.get( "geoQuery", {query: $("#queryStr").val() }, function( data ) {
+        geodata = data;
+        maxstage = data.executionStats.executionStages.inputStages.length;
+
+        var dd = data.executionStats.executionStages.inputStages[stage].inputStage.indexBoundsObj;
+        // var dd = JSON.stringify(data);
+
+        $( "#queryStr" ).val( JSON.stringify(dd));
            // parse and update map
-           data.forEach(function(d) {
-            plainText = JSON.stringify(d)
-                if (plainText) {
-                    loadGeoJson(plainText);
-                    map.fitBounds(bounds);
-                }
-            });
+        dd.forEach(function(d){
+            if (d) {
+                loadGeoJson(d);
+                map.fitBounds(bounds);
+            }
         });
-  })
+    })
+  });
 
   // init even 
   $('#decStage').on('click', function(event) {
-      if(stage > 1) {
+      if(stage > 0) {
         stage--;
       }
       $('#stage').text(stage);
+        var dd = geodata.executionStats.executionStages.inputStages[stage].inputStage.indexBoundsObj;
+        // var dd = JSON.stringify(data);
+
+        $( "#queryStr" ).val( JSON.stringify(dd));
+           // parse and update map
+        dd.forEach(function(d){
+            if (d) {
+                loadGeoJson(d);
+                map.fitBounds(bounds);
+            }
+        });
   })
 
   $('#incStage').on('click', function(event) {
-      if(stage < 10) {
+      if(stage < maxstage) {
         stage++
       }
       $('#stage').text(stage);
+        var dd = geodata.executionStats.executionStages.inputStages[stage].inputStage.indexBoundsObj;
+        // var dd = JSON.stringify(data);
+
+        $( "#queryStr" ).val( JSON.stringify(dd));
+           // parse and update map
+        dd.forEach(function(d){
+            if (d) {
+                loadGeoJson(d);
+                map.fitBounds(bounds);
+            }
+        });
   })
 });
 
@@ -247,7 +276,7 @@ google.maps.event.addDomListener(window, 'load', function() {
     <button id="decStage" class="btn btn-default"> 
         <span class="glyphicon glyphicon-chevron-left"></span> 
     </button>
-    Stage: <span id="stage"> 1 </span>
+    Stage: <span id="stage"> 0 </span>
     <button id="incStage" class="btn btn-default"> 
         <span class="glyphicon glyphicon-chevron-right"></span>
     </button>

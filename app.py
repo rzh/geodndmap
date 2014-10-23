@@ -7,69 +7,10 @@ from bottle import static_file
 
 MONGO_HOST = 'localhost'
 MONGO_PORT = 27017
-MONGO_DB = 'visuals'
+MONGO_DB = 'test'
 MONGO_COLL = 'geo'
 app = Bottle()
 client = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)
-p='''
-[{
-  "type": "Polygon",
-  "coordinates": [
-    [
-      [
-        -80.267831,
-        42.050312
-      ],
-      [
-        -80.267831,
-        45.003652
-      ],
-      [
-        -73.362579,
-        45.003652
-      ],
-      [
-        -73.362579,
-        42.050312
-      ],
-      [
-        -80.267831,
-        42.050312
-      ]
-    ]
-  ]
-},
-
-{
-  "type": "Polygon",
-  "coordinates": [
-    [
-      [
-        -70.267831,
-        42.050312
-      ],
-      [
-        -70.267831,
-        45.003652
-      ],
-      [
-        -63.362579,
-        45.003652
-      ],
-      [
-        -63.362579,
-        42.050312
-      ],
-      [
-        -70.267831,
-        42.050312
-      ]
-    ]
-  ]
-}
-]
-'''
-
 
 def main():
     run(app, host='localhost', port=8080)
@@ -103,7 +44,7 @@ def do_query():
     # return template('<h3>Explain Output for {{query}}'
     #                '</h3><pre>{{explain}}</pre>',
     #                **locals())
-    return p
+    return explain
 
 if __name__ == '__main__':
     main()
