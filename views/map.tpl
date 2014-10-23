@@ -106,7 +106,7 @@ function loadGeoJson(geo) {
       fillColor: '#FF0000',
       fillOpacity: 0.30,
       geodesic: true,
-      draggable: true
+      draggable: false
     });
 
     polygons.push(polygon);
@@ -211,6 +211,7 @@ function cleanMap() {
         p.setMap(null);
     });
     polygons=[];
+  bounds = new google.maps.LatLngBounds();
 }
 
 google.maps.event.addDomListener(window, 'load', function() {
@@ -222,10 +223,11 @@ google.maps.event.addDomListener(window, 'load', function() {
         geodata = data;
         maxstage = data.executionStats.executionStages.inputStages.length;
 
+      cleanMap();
         var dd = data.executionStats.executionStages.inputStages[stage].inputStage.indexBoundsObj;
         // var dd = JSON.stringify(data);
 
-        $( "#queryStr" ).val( JSON.stringify(dd));
+        // $( "#queryStr" ).val( JSON.stringify(dd));
            // parse and update map
         dd.forEach(function(d){
             if (d) {
@@ -241,12 +243,12 @@ google.maps.event.addDomListener(window, 'load', function() {
       if(stage > 0) {
         stage--;
       }
-      $('#stage').text(stage);
+      $('#stage').text(stage+1);
       cleanMap();
         var dd = geodata.executionStats.executionStages.inputStages[stage].inputStage.indexBoundsObj;
         // var dd = JSON.stringify(data);
 
-        $( "#queryStr" ).val( JSON.stringify(dd));
+        // $( "#queryStr" ).val( JSON.stringify(dd));
            // parse and update map
         dd.forEach(function(d){
             if (d) {
@@ -257,14 +259,15 @@ google.maps.event.addDomListener(window, 'load', function() {
   })
 
   $('#incStage').on('click', function(event) {
-      if(stage < maxstage) {
+      if(stage < maxstage-1) {
         stage++
       }
-      $('#stage').text(stage);
+      $('#stage').text(stage+1);
+      cleanMap();
         var dd = geodata.executionStats.executionStages.inputStages[stage].inputStage.indexBoundsObj;
         // var dd = JSON.stringify(data);
 
-        $( "#queryStr" ).val( JSON.stringify(dd));
+        // $( "#queryStr" ).val( JSON.stringify(dd));
            // parse and update map
         dd.forEach(function(d){
             if (d) {
@@ -279,7 +282,7 @@ google.maps.event.addDomListener(window, 'load', function() {
   </head>
   <body>
     <h4>Geo Query</h4>
-    <textarea id="queryStr" class="form-control" rows="3"></textarea>
+    <textarea id="queryStr" class="form-control" rows="1">{"geo": {"$nearSphere": {"$geometry": { "type": "Point", "coordinates": [-73.988152, 40.757563]}, "$maxDistance": 500000}}} </textarea>
 
     <button id="query" type="submit" class="btn btn-default">Submit <span class="glyphicon glyphicon-map-marker"/></button>
     
@@ -287,7 +290,7 @@ google.maps.event.addDomListener(window, 'load', function() {
     <button id="decStage" class="btn btn-default"> 
         <span class="glyphicon glyphicon-chevron-left"></span> 
     </button>
-    Stage: <span id="stage"> 0 </span>
+    Stage: <span id="stage"> 1 </span>
     <button id="incStage" class="btn btn-default"> 
         <span class="glyphicon glyphicon-chevron-right"></span>
     </button>
