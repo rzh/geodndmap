@@ -249,6 +249,7 @@ function updateMap(data, resetmap){
     if (searcharea != undefined) {
         loadGeoJson(searcharea, '#002255')
     }
+    $('#stage').text(stage+1);
 }
 
 google.maps.event.addDomListener(window, 'load', function() {
@@ -291,7 +292,6 @@ google.maps.event.addDomListener(window, 'load', function() {
       }
 
       stage--;
-      $('#stage').text(stage+1);
       cleanMap();
       updateMap(geodata);
   })
