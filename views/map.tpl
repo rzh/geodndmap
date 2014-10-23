@@ -42,6 +42,7 @@ var map;
 var bounds;
 var stage=0;
 var geodata={};
+var polygons=[];
 var maxstage=0;
 
 function initMap() {
@@ -107,6 +108,8 @@ function loadGeoJson(geo) {
       geodesic: true,
       draggable: true
     });
+
+    polygons.push(polygon);
   } else if (geo.type.toLowerCase() === 'linestring') {
     var polyline = new google.maps.Polyline({
       map: map,
@@ -203,6 +206,13 @@ function handleDrop(e) {
   return false;
 }
 
+function cleanMap() {
+    polygons.forEach(function(p){
+        p.setMap(null);
+    });
+    polygons=[];
+}
+
 google.maps.event.addDomListener(window, 'load', function() {
   initMap();
   initEvents();
@@ -232,6 +242,7 @@ google.maps.event.addDomListener(window, 'load', function() {
         stage--;
       }
       $('#stage').text(stage);
+      cleanMap();
         var dd = geodata.executionStats.executionStages.inputStages[stage].inputStage.indexBoundsObj;
         // var dd = JSON.stringify(data);
 
