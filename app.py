@@ -1,8 +1,7 @@
 import json
 import pymongo
 
-from bottle import *
-from bottle import static_file
+from bottle import Bottle, request, response, run, static_file, template
 
 
 MONGO_HOST = 'localhost'
@@ -12,16 +11,20 @@ MONGO_COLL = 'geo'
 app = Bottle()
 client = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)
 
+
 def main():
-    run(app, debug = True, host='localhost', port=8080)
+    run(app, debug=True, host='localhost', port=8080)
+
 
 @app.hook('after_request')
 def enable_cors():
         response.headers['Access-Control-Allow-Origin'] = '*'
 
+
 @app.route('/static/:path#.+#', name='static')
 def static(path):
         return static_file(path, root='./static')
+
 
 @app.route('/')
 def geo_map():
@@ -40,10 +43,6 @@ def do_query():
             explain = client[MONGO_DB][MONGO_COLL].find(query).explain()
         except Exception as e:
             explain = str(e)
-    # TODO: pass 'explain' to parser
-    # return template('<h3>Explain Output for {{query}}'
-    #                '</h3><pre>{{explain}}</pre>',
-    #                **locals())
     return explain
 
 if __name__ == '__main__':
