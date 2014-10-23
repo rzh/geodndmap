@@ -134,6 +134,7 @@ function loadGeoJson(geo, color) {
       map: map,
       position: coord2LatLng(geo.coordinates, 0)
     });
+    polygons.push(marker);
   } else if (geo.type.toLowerCase() === 'multipoint') {
     var points = coord2LatLng(geo.coordinates, 1);
     points.forEach(function (point) {
@@ -262,12 +263,15 @@ google.maps.event.addDomListener(window, 'load', function() {
   // update search area
   q = JSON.parse($("#queryStr").val());
 
-  if (typeof q.geo['$geoWithin'] === "undefined") {
-  } else {
+  if ( "$geoWithin" in q.geo) {
     searcharea = q.geo['$geoWithin']['$geometry'];
+  } else if ( "$nearSphere" in q.geo) {
+    searcharea = q.geo['$nearSphere']['$geometry'];
+  } else if ( "$near" in q.geo) {
+    searcharea = q.geo['$near']['$geometry'];
   }
 
-    $.get( "geoQuery", {query: $("#queryStr").val() }, function( data ) {
+   $.getJSON( "geoQuery", {query: $("#queryStr").val() }, function( data ) {
         geodata = data;
         if ( data.executionStats.executionStages.stage == "GEO_NEAR_2DSPHERE" ) {
             maxstage = data.executionStats.executionStages.inputStages.length;
@@ -307,7 +311,7 @@ google.maps.event.addDomListener(window, 'load', function() {
   </head>
   <body>
     <h4>Geo Query</h4>
-    <textarea id="queryStr" class="form-control" rows="1">{"geo": {"$nearSphere": {"$geometry": { "type": "Point", "coordinates": [-73.988152, 40.757563]}, "$maxDistance": 500000}}} </textarea>
+    <textarea id="queryStr" class="form-control" rows="1">{"geo": {"$nearSphere": {"$geometry": { "type": "Point", "coordinates": [ -73.987840, 40.757470]}, "$maxDistance": 500000}}} </textarea>
 
     <button id="query" type="submit" class="btn btn-default">Submit <span class="glyphicon glyphicon-map-marker"/></button>
     
