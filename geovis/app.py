@@ -1,8 +1,16 @@
 import json
+import os
 import pymongo
+
+import bottle
 
 from bottle import Bottle, request, response, run, static_file, template
 from geovis import parser2d
+
+
+# Set template path
+HERE = os.path.dirname(__file__)
+bottle.TEMPLATE_PATH.append(os.path.join(HERE, 'views'))
 
 
 MONGO_HOST = 'localhost'
@@ -24,7 +32,7 @@ def enable_cors():
 
 @app.route('/static/:path#.+#', name='static')
 def static(path):
-        return static_file(path, root='./static')
+        return static_file(path, root=os.path.join(HERE, 'static'))
 
 
 @app.route('/')
@@ -52,12 +60,17 @@ def do_query():
                 if '2d' in key_patt.values():
                     # We have a 2d query
                     index_bnds = input_stage['indexBounds']
+
+
                     # Parse to geoJSON
                     geo_json = parser2d.to_geojson(
-                        parser2d.unhash_fast(parser2d.getHashes(index_bnds)))
+                        map(parser2d.unhash_fast, parser2d.getHashes(index_bnds)))
                     input_stage['indexBoundsObj'] = geo_json
-            except KeyError as e:
-                explain = str(e)
+
+
+
+            except KeyError:
+                pass
     return explain
 
 if __name__ == '__main__':
