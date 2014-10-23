@@ -13,7 +13,7 @@ app = Bottle()
 client = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)
 
 def main():
-    run(app, host='localhost', port=8080)
+    run(app, debug = True, host='localhost', port=8080)
 
 @app.hook('after_request')
 def enable_cors():
