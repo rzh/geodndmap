@@ -241,7 +241,11 @@ google.maps.event.addDomListener(window, 'load', function() {
   $('#query').on('click', function(event) {
     $.get( "geoQuery", {query: $("#queryStr").val() }, function( data ) {
         geodata = data;
-        maxstage = data.executionStats.executionStages.inputStages.length;
+        if ( data.executionStats.executionStages.stage == "GEO_NEAR_2DSPHERE" ) {
+            maxstage = data.executionStats.executionStages.inputStages.length;
+        } else {
+            maxstage = 1;
+        }
 
         updateMap(data);
     })
