@@ -44,6 +44,7 @@ var stage=0;
 var geodata={};
 var polygons=[];
 var maxstage=0;
+var searcharea=undefined;
 
 function initMap() {
   // set up the map
@@ -92,7 +93,16 @@ function coord2LatLng(arr, depth) {
 /** 
  * load GeoJSON string or object and render shape on map
  **/
-function loadGeoJson(geo) {
+function loadGeoJson(geo, color) {
+  if (typeof color === "undefined") {
+    color = '#FF0000';
+    strokeOpacity = 0.8;
+    fillOpacity = 0.30;
+  } else {
+    strokeOpacity = 0.5;
+    fillOpacity = 0.20;
+  }
+
   if (typeof geo === 'string') {
     geo = JSON.parse(geo);
   }
@@ -100,11 +110,11 @@ function loadGeoJson(geo) {
     var polygon = new google.maps.Polygon({
       map: map,
       paths: coord2LatLng(geo.coordinates, 2),
-      strokeColor: '#FF0000',
-      strokeOpacity: 0.8,
+      strokeColor: color,
+      strokeOpacity: strokeOpacity,
       strokeWeight: 2,
-      fillColor: '#FF0000',
-      fillOpacity: 0.30,
+      fillColor: color,
+      fillOpacity: fillOpacity,
       geodesic: true,
       draggable: false
     });
@@ -214,8 +224,10 @@ function cleanMap() {
   bounds = new google.maps.LatLngBounds();
 }
 
-function updateMap(data){
-    cleanMap();
+function updateMap(data, resetmap){
+    if (typeof resetmap != "undefined"){
+        cleanMap();
+    }
     var dd;
     
     if ( data.executionStats.executionStages.stage == "GEO_NEAR_2DSPHERE" ) {
@@ -232,6 +244,10 @@ function updateMap(data){
             map.fitBounds(bounds);
         }
     });
+
+    if (searcharea != undefined) {
+        loadGeoJson(searcharea, '#002255')
+    }
 }
 
 google.maps.event.addDomListener(window, 'load', function() {
@@ -239,6 +255,18 @@ google.maps.event.addDomListener(window, 'load', function() {
   initEvents();
 
   $('#query').on('click', function(event) {
+  maxstage = 0;
+  stage = 0;
+
+
+  // update search area
+  q = JSON.parse($("#queryStr").val());
+
+  if (typeof q.geo['$geoWithin'] === "undefined") {
+  } else {
+    searcharea = q.geo['$geoWithin']['$geometry'];
+  }
+
     $.get( "geoQuery", {query: $("#queryStr").val() }, function( data ) {
         geodata = data;
         if ( data.executionStats.executionStages.stage == "GEO_NEAR_2DSPHERE" ) {
@@ -247,24 +275,28 @@ google.maps.event.addDomListener(window, 'load', function() {
             maxstage = 1;
         }
 
+        cleanMap();
         updateMap(data);
     })
   });
 
   // init even 
   $('#decStage').on('click', function(event) {
-      if(stage > 0) {
-        stage--;
+      if(stage <= 0) {
+        return;
       }
+
+      stage--;
       $('#stage').text(stage+1);
       cleanMap();
       updateMap(geodata);
   })
 
   $('#incStage').on('click', function(event) {
-      if(stage < maxstage-1) {
-        stage++
+      if(stage >= maxstage-1) {
+        return;
       }
+        stage++
       $('#stage').text(stage+1);
       cleanMap();
       updateMap(geodata);
