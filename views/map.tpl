@@ -214,6 +214,26 @@ function cleanMap() {
   bounds = new google.maps.LatLngBounds();
 }
 
+function updateMap(data){
+    cleanMap();
+    var dd;
+    
+    if ( data.executionStats.executionStages.stage == "GEO_NEAR_2DSPHERE" ) {
+        dd = data.executionStats.executionStages.inputStages[stage].inputStage.indexBoundsObj;
+    } else {
+        // within
+        dd = data.executionStats.executionStages.inputStage.inputStage.indexBoundsObj;
+
+    }
+
+    dd.forEach(function(d){
+        if (d) {
+            loadGeoJson(d);
+            map.fitBounds(bounds);
+        }
+    });
+}
+
 google.maps.event.addDomListener(window, 'load', function() {
   initMap();
   initEvents();
@@ -223,18 +243,7 @@ google.maps.event.addDomListener(window, 'load', function() {
         geodata = data;
         maxstage = data.executionStats.executionStages.inputStages.length;
 
-      cleanMap();
-        var dd = data.executionStats.executionStages.inputStages[stage].inputStage.indexBoundsObj;
-        // var dd = JSON.stringify(data);
-
-        // $( "#queryStr" ).val( JSON.stringify(dd));
-           // parse and update map
-        dd.forEach(function(d){
-            if (d) {
-                loadGeoJson(d);
-                map.fitBounds(bounds);
-            }
-        });
+        updateMap(data);
     })
   });
 
@@ -245,17 +254,7 @@ google.maps.event.addDomListener(window, 'load', function() {
       }
       $('#stage').text(stage+1);
       cleanMap();
-        var dd = geodata.executionStats.executionStages.inputStages[stage].inputStage.indexBoundsObj;
-        // var dd = JSON.stringify(data);
-
-        // $( "#queryStr" ).val( JSON.stringify(dd));
-           // parse and update map
-        dd.forEach(function(d){
-            if (d) {
-                loadGeoJson(d);
-                map.fitBounds(bounds);
-            }
-        });
+      updateMap(geodata);
   })
 
   $('#incStage').on('click', function(event) {
@@ -264,17 +263,7 @@ google.maps.event.addDomListener(window, 'load', function() {
       }
       $('#stage').text(stage+1);
       cleanMap();
-        var dd = geodata.executionStats.executionStages.inputStages[stage].inputStage.indexBoundsObj;
-        // var dd = JSON.stringify(data);
-
-        // $( "#queryStr" ).val( JSON.stringify(dd));
-           // parse and update map
-        dd.forEach(function(d){
-            if (d) {
-                loadGeoJson(d);
-                map.fitBounds(bounds);
-            }
-        });
+      updateMap(geodata);
   })
 });
 
