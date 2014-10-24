@@ -15,8 +15,8 @@ bottle.TEMPLATE_PATH.append(os.path.join(HERE, 'views'))
 
 MONGO_HOST = 'localhost'
 MONGO_PORT = 27017
-MONGO_DB = 'test'
-MONGO_COLL = 'geo'
+MONGO_DB = 'osm'
+MONGO_COLL = 'nodes'
 app = Bottle()
 client = pymongo.MongoClient(MONGO_HOST, MONGO_PORT)
 

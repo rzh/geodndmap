@@ -260,6 +260,10 @@ function cleanMap() {
     polygons=[];
 
     bounds = new google.maps.LatLngBounds();
+
+    if (searcharea.type == "Point"){
+        loadGeoJson(searcharea);
+    }
 }
 
 function updateMap(data, resetmap){
@@ -273,6 +277,7 @@ function updateMap(data, resetmap){
     
     if ( data.executionStats.executionStages.stage == "GEO_NEAR_2DSPHERE" ) {
         dd = data.executionStats.executionStages.inputStages[stage].inputStage.indexBoundsObj;
+        /*
         if (stage > 0) {
             // draw the previous stage
             data.executionStats.executionStages.inputStages[stage-1].inputStage.indexBoundsObj.forEach(function(d){
@@ -281,6 +286,7 @@ function updateMap(data, resetmap){
                 }
             });
         }
+        */
     } else {
         // within
         dd = data.executionStats.executionStages.inputStage.inputStage.indexBoundsObj;
@@ -318,12 +324,12 @@ google.maps.event.addDomListener(window, 'load', function() {
   // update search area
   q = JSON.parse($("#queryStr").val());
 
-  if ( "$geoWithin" in q.geo) {
-    searcharea = q.geo['$geoWithin']['$geometry'];
-  } else if ( "$nearSphere" in q.geo) {
-    searcharea = q.geo['$nearSphere']['$geometry'];
-  } else if ( "$near" in q.geo) {
-    searcharea = q.geo['$near']['$geometry'];
+  if ( "$geoWithin" in q.loc) {
+    searcharea = q.loc['$geoWithin']['$geometry'];
+  } else if ( "$nearSphere" in q.loc) {
+    searcharea = q.loc['$nearSphere']['$geometry'];
+  } else if ( "$near" in q.loc) {
+    searcharea = q.loc['$near']['$geometry'];
   }
 
    $.getJSON( "geoQuery", {query: $("#queryStr").val() }, function( data ) {
@@ -366,7 +372,7 @@ google.maps.event.addDomListener(window, 'load', function() {
     t = clone(selectPoly);
     t.push(t[0]);
 
-    $("#queryStr").val('{"geo": {"$geoWithin": {"$geometry": { "type": "Polygon", "coordinates": [' + JSON.stringify(t)+ ']}}}}');
+    $("#queryStr").val('{"loc": {"$geoWithin": {"$geometry": { "type": "Polygon", "coordinates": [' + JSON.stringify(t)+ ']}}}}');
     selectPoly = [];
 
   });
@@ -380,13 +386,16 @@ google.maps.event.addDomListener(window, 'load', function() {
             selectPoly = [];
         }
     });
+
+    loadGeoJson({ "type": "Point", "coordinates": [ -73.987840, 40.757470]});
+    map.fitBounds(bounds);
 });
 
     </script>
   </head>
   <body>
     <h4>Geo Query</h4>
-    <textarea id="queryStr" class="form-control" rows="1">{"geo": {"$nearSphere": {"$geometry": { "type": "Point", "coordinates": [ -73.987840, 40.757470]}, "$maxDistance": 500000}}} </textarea>
+    <textarea id="queryStr" class="form-control" rows="1">{"loc": {"$nearSphere": {"$geometry": { "type": "Point", "coordinates": [ -73.987840, 40.757470]}, "$maxDistance": 2000}}} </textarea>
 
     <button id="query" type="submit" class="btn btn-default">Submit <span class="glyphicon glyphicon-map-marker"/></button>
     
