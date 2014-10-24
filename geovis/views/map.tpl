@@ -43,6 +43,7 @@ var bounds;
 var stage=0;
 var geodata={};
 var polygons=[];
+var selectPoly=[];
 var maxstage=0;
 var searcharea=undefined;
 
@@ -93,14 +94,18 @@ function coord2LatLng(arr, depth) {
 /** 
  * load GeoJSON string or object and render shape on map
  **/
-function loadGeoJson(geo, color) {
+function loadGeoJson(geo, color, strokeOpacity, fillOpacity) {
   if (typeof color === "undefined") {
     color = '#FF0000';
     strokeOpacity = 0.8;
     fillOpacity = 0.30;
   } else {
-    strokeOpacity = 0.5;
-    fillOpacity = 0.20;
+    if (strokeOpacity == undefined) {
+        strokeOpacity = 0.5;
+    }
+    if (fillOpacity == undefined) {
+        fillOpacity = 0.20;
+    }
   }
 
   if (typeof geo === 'string') {
@@ -148,6 +153,10 @@ function loadGeoJson(geo, color) {
   }
 }
 
+function clickMap(evt){
+    console.log("test " + evt.latLng);
+    selectPoly.push([evt.latLng.B, evt.latLng.k]);
+}
 
 /**
  * DOM (drag/drop) functions 
@@ -166,6 +175,9 @@ function initEvents() {
   // then map-specific events
   mapContainer.addEventListener('dragstart', showPanel, false);
   mapContainer.addEventListener('dragenter', showPanel, false);
+
+  //mapContainer.addEventListener('click', clickMap, false);
+  google.maps.event.addListener(map, 'click', clickMap)
 
   // then the overlay specific events (since it only appears once drag starts)
   dropContainer.addEventListener('dragend', hidePanel, false);
@@ -222,7 +234,8 @@ function cleanMap() {
         p.setMap(null);
     });
     polygons=[];
-  bounds = new google.maps.LatLngBounds();
+
+    bounds = new google.maps.LatLngBounds();
 }
 
 function updateMap(data, resetmap){
@@ -233,6 +246,14 @@ function updateMap(data, resetmap){
     
     if ( data.executionStats.executionStages.stage == "GEO_NEAR_2DSPHERE" ) {
         dd = data.executionStats.executionStages.inputStages[stage].inputStage.indexBoundsObj;
+        if (stage > 0) {
+            // draw the previous stage
+            data.executionStats.executionStages.inputStages[stage-1].inputStage.indexBoundsObj.forEach(function(d){
+                if (d) {
+                    loadGeoJson(d, '#ffff00', 0.95, 0.6);
+                }
+            });
+        }
     } else {
         // within
         dd = data.executionStats.executionStages.inputStage.inputStage.indexBoundsObj;
@@ -248,6 +269,12 @@ function updateMap(data, resetmap){
 
     if (searcharea != undefined) {
         loadGeoJson(searcharea, '#002255')
+    }
+    if (selectPoly.length > 0) {
+        var s = selectPoly;
+        s.push(s[0])
+        console.log({type:"Polygon", coordinates: [s]});
+        loadGeoJson({type:"Polygon", coordinates: [s]}, '#550055', 0.8, 0,8)
     }
     $('#stage').text(stage+1);
 }
