@@ -44,8 +44,19 @@ var stage=0;
 var geodata={};
 var polygons=[];
 var selectPoly=[];
+var selectarea=undefined;
 var maxstage=0;
 var searcharea=undefined;
+
+function clone(o) {
+    var newObj = [];
+
+    for(i = 0; i < o.length; i++) {
+        newObj.push(o[i]);
+    }
+
+    return newObj;
+};
 
 function initMap() {
   // set up the map
@@ -125,6 +136,8 @@ function loadGeoJson(geo, color, strokeOpacity, fillOpacity) {
     });
 
     polygons.push(polygon);
+
+    return polygon;
   } else if (geo.type.toLowerCase() === 'linestring') {
     var polyline = new google.maps.Polyline({
       map: map,
@@ -156,6 +169,17 @@ function loadGeoJson(geo, color, strokeOpacity, fillOpacity) {
 function clickMap(evt){
     console.log("test " + evt.latLng);
     selectPoly.push([evt.latLng.B, evt.latLng.k]);
+    // updateMap();
+    if (selectPoly.length > 2) {
+        var s = clone(selectPoly);
+        s.push(s[0])
+        console.log({type:"Polygon", coordinates: [s]});
+        if( selectarea != undefined) {
+            selectarea.setMap(null);
+            selectarea=undefined;
+        }
+        selectarea = loadGeoJson({type:"Polygon", coordinates: [s]}, '#550055', 0.8, 0,8)
+    }
 }
 
 /**
@@ -239,6 +263,9 @@ function cleanMap() {
 }
 
 function updateMap(data, resetmap){
+    if(data == undefined){
+        data = geodata;
+    }
     if (typeof resetmap != "undefined"){
         cleanMap();
     }
@@ -270,11 +297,11 @@ function updateMap(data, resetmap){
     if (searcharea != undefined) {
         loadGeoJson(searcharea, '#002255')
     }
-    if (selectPoly.length > 0) {
-        var s = selectPoly;
+    if (selectPoly.length > 2) {
+        var s = clone(selectPoly);
         s.push(s[0])
         console.log({type:"Polygon", coordinates: [s]});
-        loadGeoJson({type:"Polygon", coordinates: [s]}, '#550055', 0.8, 0,8)
+        selectarea = loadGeoJson({type:"Polygon", coordinates: [s]}, '#550055', 0.8, 0,8)
     }
     $('#stage').text(stage+1);
 }
@@ -331,7 +358,28 @@ google.maps.event.addDomListener(window, 'load', function() {
       $('#stage').text(stage+1);
       cleanMap();
       updateMap(geodata);
-  })
+  });
+
+  $("#withinQ").on('click', function(e) {
+    // generate $within Query
+    var t = [];
+    t = clone(selectPoly);
+    t.push(t[0]);
+
+    $("#queryStr").val('{"geo": {"$geoWithin": {"$geometry": { "type": "Polygon", "coordinates": [' + JSON.stringify(t)+ ']}}}}');
+    selectPoly = [];
+
+  });
+
+  $(window).keydown(function(evt) {
+        if (evt.which == 17) { // ctrl
+            if (selectarea != undefined) {
+                selectarea.setMap(null);
+                selectarea = undefined;
+            }
+            selectPoly = [];
+        }
+    });
 });
 
     </script>
@@ -343,6 +391,7 @@ google.maps.event.addDomListener(window, 'load', function() {
     <button id="query" type="submit" class="btn btn-default">Submit <span class="glyphicon glyphicon-map-marker"/></button>
     
     <div class="pull-right">
+    <button id="withinQ" class="btn btn-default">$within</button>
     <button id="decStage" class="btn btn-default"> 
         <span class="glyphicon glyphicon-chevron-left"></span> 
     </button>
